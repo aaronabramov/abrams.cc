@@ -10,5 +10,10 @@
         "type": "page",
         "href": "https://twitter.com/aarondjents",
         "newWindow": true
+    },
+    "rust-dropping-things-in-another-thread": {
+        "theme": {
+            "breadcrumb": false
+        }
     }
 }

@@ -46,7 +46,7 @@ export const ProjectCard: React.FC<React.PropsWithChildren<{ imgSrc: string, src
   return (
     <div style={styles.card}>
       <a style={styles.logoLink} href={props.src} target="_blank">
-        <img style={styles.img} src={props.imgSrc} />
+        <img style={styles.img} src={props.imgSrc} alt="project logo" />
       </a>
       <div style={styles.cardText}>
         <a href={props.src} target="_blank"><h1 style={styles.projectTitle}>{props.title}</h1></a>

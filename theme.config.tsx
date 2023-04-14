@@ -60,7 +60,7 @@ gtag('config', 'G-8HHN0WEXTW');
   docsRepositoryBase: "https://github.com/aaronabramov/abrams.cc",
   useNextSeoProps: () => {
     return {
-      titleTemplate: "%s",
+      titleTemplate: "%s - Aaron Abrams",
       description:
         "Aaron Abramov. Software Engineer. Personal Website.",
     };
