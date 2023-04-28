@@ -17,7 +17,7 @@ const config: DocsThemeConfig = {
     <>
       <script
         async
-        src="https://www.googletagmanager.com/gtag/js?id=G-7RT4L8C5YF"
+        src="https://www.googletagmanager.com/gtag/js?id=G-8HHN0WEXTW"
       ></script>
       <script
         dangerouslySetInnerHTML={{
