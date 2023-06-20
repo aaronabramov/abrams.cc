@@ -1,10 +1,10 @@
-import type * as CSS from 'csstype';
-import React from 'react'
-import YouTube from 'react-youtube';
+import type * as CSS from "csstype";
+import React from "react";
+import YouTube from "react-youtube";
 
 const styles: { [key: string]: CSS.Properties } = {
   card: {
-    display: 'flex',
+    display: "flex",
     padding: "10px",
     marginTop: "20px",
   },
@@ -17,16 +17,16 @@ const styles: { [key: string]: CSS.Properties } = {
     alignItems: "center",
   },
   img: {
-    height: '100px',
-    width: '100px',
+    height: "100px",
+    width: "100px",
   },
   projectTitle: {
     fontSize: "26px",
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: "#d52c2c",
   },
   cardText: {
-    paddingLeft: "30px"
+    paddingLeft: "30px",
   },
   a: {
     color: "#d52c2c",
@@ -35,26 +35,30 @@ const styles: { [key: string]: CSS.Properties } = {
     display: "flex",
     justifyContent: "space-around",
     flexWrap: "wrap",
-    alignItems: "center"
+    alignItems: "center",
   },
   youtubeCard: {
-    padding: '10px 5px'
+    padding: "10px 5px",
   },
-}
+};
 
-export const ProjectCard: React.FC<React.PropsWithChildren<{ imgSrc: string, src: string, title: string }>> = (props) => {
+export const ProjectCard: React.FC<
+  React.PropsWithChildren<{ imgSrc: string; src: string; title: string }>
+> = (props) => {
   return (
     <div style={styles.card}>
       <a style={styles.logoLink} href={props.src} target="_blank">
         <img style={styles.img} src={props.imgSrc} alt="project logo" />
       </a>
       <div style={styles.cardText}>
-        <a href={props.src} target="_blank"><h1 style={styles.projectTitle}>{props.title}</h1></a>
+        <a href={props.src} target="_blank">
+          <h1 style={styles.projectTitle}>{props.title}</h1>
+        </a>
         {props.children}
       </div>
     </div>
-  )
-}
+  );
+};
 
 export const ProjectsCards = () => {
   return (
@@ -65,10 +69,9 @@ export const ProjectsCards = () => {
         src="https://github.com/aaronabramov/k9"
       >
         <p>
-          k9 is a Rust testing library that provides simplified
-          API for snapshot testing as well as a set of other
-          useful assertion helpers focused on producing better
-          failing messages
+          k9 is a Rust testing library that provides simplified API for snapshot
+          testing as well as a set of other useful assertion helpers focused on
+          producing better failing messages
         </p>
       </ProjectCard>
       <ProjectCard
@@ -77,35 +80,48 @@ export const ProjectsCards = () => {
         src="https://github.com/facebook/jest"
       >
         <p>
-          When I joined Meta, <a href="https://cpojer.net/" style={styles.a} target="_blank">Christoph Nakazawa</a> and
-          I worked on improving the testing infrastructure at the company. As part of this effort, we implemented a
-          large portion of the core framework functionality of Jest, which later became the most popular testing framework
-          in JavaScript.
+          When I joined Meta,{" "}
+          <a href="https://cpojer.net/" style={styles.a} target="_blank">
+            Christoph Nakazawa
+          </a>{" "}
+          and I worked on improving the testing infrastructure at the company.
+          As part of this effort, we implemented a large portion of the core
+          framework functionality of Jest, which later became the most popular
+          testing framework in JavaScript.
         </p>
-      </ProjectCard >
+      </ProjectCard>
       <ProjectCard
         imgSrc="/logo_stc.png"
         title="String Tension Calculator"
         src="https://www.stringtensioncalculator.com/"
       >
         <p>
-          When I went on tour with my band, I had to bring multiple guitars with me, each in a different tuning.
-          To ensure that each guitar had the same string tension, I built a tool that did the math and made
-          the process easier.
+          A small app that helps calculate guitar string tension. Or bring
+          multiple guitars with different string sets to the same tension.
         </p>
-      </ProjectCard >
-
-    </div >
-  )
-}
+      </ProjectCard>
+      <ProjectCard
+        imgSrc="/civics.png"
+        title="US Citizenship Test"
+        src="https://civics.training/"
+      >
+        <p>
+          An app that helps prepare for the US civics test that you are required
+          to take to become a US citizen.
+        </p>
+      </ProjectCard>
+    </div>
+  );
+};
 
 export const YoutubeCard = (props: { ytid: string }) => {
-  const opts = { height: 390 / 2, width: 640 / 2 }
-  return (<div style={styles.youtubeCard}>
-
-    <YouTube opts={opts} videoId={props.ytid} />
-  </div>)
-}
+  const opts = { height: 390 / 2, width: 640 / 2 };
+  return (
+    <div style={styles.youtubeCard}>
+      <YouTube opts={opts} videoId={props.ytid} />
+    </div>
+  );
+};
 
 export const MusicCards = () => {
   return (
@@ -117,8 +133,8 @@ export const MusicCards = () => {
       <YoutubeCard ytid="qegs2Er7T-g" />
       <YoutubeCard ytid="GlYQCBpo8HA" />
     </div>
-  )
-}
+  );
+};
 
 export const FilmCards = () => {
   return (
@@ -130,5 +146,5 @@ export const FilmCards = () => {
       <YoutubeCard ytid="9ya2Jb5nUMo" />
       <YoutubeCard ytid="VYUs9bFdAiw" />
     </div>
-  )
-}
+  );
+};
