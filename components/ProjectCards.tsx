@@ -42,9 +42,12 @@ const styles: { [key: string]: CSS.Properties } = {
   },
 };
 
-export const ProjectCard: React.FC<
-  React.PropsWithChildren<{ imgSrc: string; src: string; title: string }>
-> = (props) => {
+export const ProjectCard = (props: {
+  imgSrc: string;
+  src: string;
+  title: string;
+  children: React.ReactNode;
+}) => {
   return (
     <div style={styles.card}>
       <a style={styles.logoLink} href={props.src} target="_blank">
