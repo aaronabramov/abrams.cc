@@ -1,5 +1,6 @@
 import React from "react";
 import { DocsThemeConfig } from "nextra-theme-docs";
+import { Socials } from "./components/socials";
 
 const config: DocsThemeConfig = {
   project: {},
@@ -56,13 +57,39 @@ gtag('config', 'G-8HHN0WEXTW');
   search: { component: undefined },
   // search: { placeholder: "Search..." },
   navigation: { prev: false, next: false },
+  navbar: {
+    component: () => {
+      return (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            borderBottom: "1px solid rgb(229, 231, 235, 0.15)",
+          }}
+        >
+          <h1
+            style={{
+              margin: "16px",
+              marginLeft: "24px",
+              fontFamily: "Fira Sans Extra Condensed,sans-serif",
+              fontSize: "24px",
+              fontWeight: "bold",
+              lineHeight: "28px",
+            }}
+          >
+            Aaron Abrams
+          </h1>
+          <Socials />
+        </div>
+      );
+    },
+  },
   // banner: { text: "MEOW" }, // support ukraine?
   docsRepositoryBase: "https://github.com/aaronabramov/abrams.cc",
   useNextSeoProps: () => {
     return {
       titleTemplate: "%s - Aaron Abrams",
-      description:
-        "Aaron Abramov. Software Engineer. Personal Website.",
+      description: "Aaron Abramov. Software Engineer. Personal Website.",
     };
   },
 };
