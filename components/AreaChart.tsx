@@ -1,40 +1,35 @@
-import React, { useMemo, useCallback } from 'react';
-import { AreaClosed, Line, Bar, Area } from '@visx/shape';
-import appleStock, { AppleStock } from '@visx/mock-data/lib/mocks/appleStock';
-import { curveMonotoneX } from '@visx/curve';
-import { GridRows, GridColumns } from '@visx/grid';
-import { scaleTime, scaleLinear } from '@visx/scale';
-import { withTooltip, Tooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
-import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip';
-import { localPoint } from '@visx/event';
-import { LinearGradient } from '@visx/gradient';
-import { max, extent, bisector } from '@visx/vendor/d3-array';
-import { timeFormat } from '@visx/vendor/d3-time-format';
-import { ParentSize } from '@visx/responsive';
-
+import React, { useMemo, useCallback } from "react";
+import { AreaClosed, Line, Bar } from "@visx/shape";
+import appleStock, { AppleStock } from "@visx/mock-data/lib/mocks/appleStock";
+import { curveMonotoneX } from "@visx/curve";
+import { GridRows, GridColumns } from "@visx/grid";
+import { scaleTime, scaleLinear } from "@visx/scale";
 import {
-  GradientDarkgreenGreen,
-  GradientLightgreenGreen,
-  GradientOrangeRed,
-  GradientPinkBlue,
-  GradientPinkRed,
-  GradientPurpleOrange,
-  GradientPurpleRed,
-  GradientTealBlue,
-  RadialGradient,
-} from '@visx/gradient';
+  withTooltip,
+  Tooltip,
+  TooltipWithBounds,
+  defaultStyles,
+} from "@visx/tooltip";
+import { WithTooltipProvidedProps } from "@visx/tooltip/lib/enhancers/withTooltip";
+import { localPoint } from "@visx/event";
+import { LinearGradient } from "@visx/gradient";
+import { max, extent, bisector } from "@visx/vendor/d3-array";
+import { timeFormat } from "@visx/vendor/d3-time-format";
+import { ParentSize } from "@visx/responsive";
+
+import { GradientDarkgreenGreen } from "@visx/gradient";
 type TooltipData = AppleStock;
 
 const stock = appleStock.slice(800);
-export const background = '#3b6978';
-export const background2 = '#204051';
-export const accentColor = '#edffea';
-export const accentColorDark = '#75daad';
+export const background = "#3b6978";
+export const background2 = "#204051";
+export const accentColor = "#edffea";
+export const accentColorDark = "#75daad";
 const tooltipStyles = {
   ...defaultStyles,
   background,
-  border: '1px solid white',
-  color: 'white',
+  border: "1px solid white",
+  color: "white",
 };
 
 // util
@@ -52,11 +47,9 @@ export type AreaProps = {
 };
 
 export default () => (
-  <div style={{ width: '100%', height: '300px' }}>
+  <div style={{ width: "100%", height: "300px" }}>
     <ParentSize>
-      {({ width, height }) => (
-        <Chart width={width} height={height} />
-      )}
+      {({ width, height }) => <Chart width={width} height={height} />}
     </ParentSize>
   </div>
 );
@@ -85,7 +78,7 @@ const Chart = withTooltip<AreaProps, TooltipData>(
           range: [margin.left, innerWidth + margin.left],
           domain: extent(stock, getDate) as [Date, Date],
         }),
-      [innerWidth, margin.left],
+      [innerWidth, margin.left]
     );
     const stockValueScale = useMemo(
       () =>
@@ -94,12 +87,16 @@ const Chart = withTooltip<AreaProps, TooltipData>(
           domain: [0, (max(stock, getStockValue) || 0) + innerHeight / 3],
           nice: true,
         }),
-      [margin.top, innerHeight],
+      [margin.top, innerHeight]
     );
 
     // tooltip handler
     const handleTooltip = useCallback(
-      (event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>) => {
+      (
+        event:
+          | React.TouchEvent<SVGRectElement>
+          | React.MouseEvent<SVGRectElement>
+      ) => {
         const { x } = localPoint(event) || { x: 0 };
         const x0 = dateScale.invert(x);
         const index = bisectDate(stock, x0, 1);
@@ -107,7 +104,11 @@ const Chart = withTooltip<AreaProps, TooltipData>(
         const d1 = stock[index];
         let d = d0;
         if (d1 && getDate(d1)) {
-          d = x0.valueOf() - getDate(d0).valueOf() > getDate(d1).valueOf() - x0.valueOf() ? d1 : d0;
+          d =
+            x0.valueOf() - getDate(d0).valueOf() >
+            getDate(d1).valueOf() - x0.valueOf()
+              ? d1
+              : d0;
         }
         showTooltip({
           tooltipData: d,
@@ -115,7 +116,7 @@ const Chart = withTooltip<AreaProps, TooltipData>(
           tooltipTop: stockValueScale(getStockValue(d)),
         });
       },
-      [showTooltip, stockValueScale, dateScale],
+      [showTooltip, stockValueScale, dateScale]
     );
 
     return (
@@ -129,8 +130,17 @@ const Chart = withTooltip<AreaProps, TooltipData>(
             fill="url(#area-background-gradient)"
             rx={14}
           />
-          <LinearGradient id="area-background-gradient" from={background} to={background2} />
-          <LinearGradient id="area-gradient" from={accentColor} to={accentColor} toOpacity={0.1} />
+          <LinearGradient
+            id="area-background-gradient"
+            from={background}
+            to={background2}
+          />
+          <LinearGradient
+            id="area-gradient"
+            from={accentColor}
+            to={accentColor}
+            toOpacity={0.1}
+          />
           <GradientDarkgreenGreen id="fancy-gradient" />
           <GridRows
             left={margin.left}
@@ -185,7 +195,7 @@ const Chart = withTooltip<AreaProps, TooltipData>(
           <Line
             from={{ x: 100, y: margin.top }}
             to={{ x: 100, y: innerHeight + margin.top }}
-            stroke={'#750202'}
+            stroke={"#750202"}
             strokeWidth={2}
             pointerEvents="none"
             strokeDasharray="5,2"
@@ -239,8 +249,8 @@ const Chart = withTooltip<AreaProps, TooltipData>(
               style={{
                 ...defaultStyles,
                 minWidth: 72,
-                textAlign: 'center',
-                transform: 'translateX(-50%)',
+                textAlign: "center",
+                transform: "translateX(-50%)",
               }}
             >
               {formatDate(getDate(tooltipData))}
@@ -249,5 +259,5 @@ const Chart = withTooltip<AreaProps, TooltipData>(
         )}
       </div>
     );
-  },
+  }
 );
