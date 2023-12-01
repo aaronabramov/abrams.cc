@@ -1,36 +1,38 @@
+import { measureTime } from "../shared/logging";
+
 const ITERATIONS = 1000000;
 
 let LOGGING_ENABLED = false;
-const log = (msg) => LOGGING_ENABLED && console.log(msg);
-const time = (name) => LOGGING_ENABLED && console.time(name)
-const timeEnd = (name) => LOGGING_ENABLED && console.timeEnd(name)
+const log = (msg: string) => LOGGING_ENABLED && console.log(msg);
+const time = (name: string) => LOGGING_ENABLED && console.time(name);
+const timeEnd = (name: string) => LOGGING_ENABLED && console.timeEnd(name);
 
-
-
-const MemoryInMbToArraySize = (memoryInMb) => {
-  const memoryInBits = memoryInMb * 1000 /* to kb */ * 1000 /* to bytes */ * 8 /* to bits */;
-  const arraySize = memoryInBits / 64; /* 64 bits per `number` */;
+const MemoryInMbToArraySize = (memoryInMb: number) => {
+  const memoryInBits =
+    memoryInMb * 1000 /* to kb */ * 1000 /* to bytes */ * 8; /* to bits */
+  const arraySize = memoryInBits / 64; /* 64 bits per `number` */
 
   // let's make it 5% smaller to make sure we can fit it even if there's some overhead
-  const slightlyLessThanArraySize = Math.floor(arraySize - (arraySize * 0.05));
-  log("------------------------------------------")
-  log(`Memory of ${memoryInMb}MB can hold array of ${slightlyLessThanArraySize} numbers`);
+  const slightlyLessThanArraySize = Math.floor(arraySize - arraySize * 0.05);
+  log("------------------------------------------");
+  log(
+    `Memory of ${memoryInMb}MB can hold array of ${slightlyLessThanArraySize} numbers`
+  );
   return slightlyLessThanArraySize;
-}
+};
 
-
-
-const printArraySizeMB = (array_size) => {
+const printArraySizeMB = (array_size: number) => {
   const sizeInMb = (array_size * 64) / (8 * 1000 * 1000);
   log("--------------------------------------------------");
   log(`Array of ${array_size} numbers uses ${sizeInMb}MB of memory`);
-}
+};
 
-
-const sequentialAccess = (arraySizeInMb) => {
+const sequentialAccess = (arraySizeInMb: number) => {
   const arraySize = MemoryInMbToArraySize(arraySizeInMb);
   const arr = new Array(arraySize).fill(null).map(() => Math.random());
-  const sequentialAccessIndexes = new Array(arraySize).fill(null).map((_, i) => i);
+  const sequentialAccessIndexes = new Array(arraySize)
+    .fill(null)
+    .map((_, i) => i);
 
   time("Sequential Access");
   let result = 0;
@@ -39,12 +41,14 @@ const sequentialAccess = (arraySizeInMb) => {
     result = result ^ arr[sequentialAccessIndexes[index]];
   }
   timeEnd("Sequential Access");
-}
+};
 
-const randomAccess = (arraySizeInMb) => {
+const randomAccess = (arraySizeInMb: number) => {
   const arraySize = MemoryInMbToArraySize(arraySizeInMb);
   const arr = new Array(arraySize).fill(null).map(() => Math.random());
-  const randomAccessIndexes = new Array(arraySize).fill(null).map((_) => Math.floor(Math.random() * arraySize));
+  const randomAccessIndexes = new Array(arraySize)
+    .fill(null)
+    .map((_) => Math.floor(Math.random() * arraySize));
 
   time("Random Access");
   let result = 0;
@@ -53,9 +57,9 @@ const randomAccess = (arraySizeInMb) => {
     result = result ^ arr[randomAccessIndexes[index]];
   }
   timeEnd("Random Access");
-}
+};
 
-const runWithMemory = (memoryInMb) => {
+const runWithMemory = (memoryInMb: number) => {
   // let it warm up
   LOGGING_ENABLED = false;
   sequentialAccess(memoryInMb);
@@ -65,8 +69,7 @@ const runWithMemory = (memoryInMb) => {
   log("\n\n");
   sequentialAccess(memoryInMb);
   randomAccess(memoryInMb);
-
-}
+};
 
 runWithMemory(1);
 // runWithMemory(2);
