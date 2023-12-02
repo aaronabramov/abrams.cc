@@ -1,11 +1,15 @@
+#!node --no-warnings --loader ts-node/esm
+
 import { measureTime } from "../shared/logging";
+import range from "lodash/range";
+import mean from "lodash/mean";
+import fs from "fs";
+import sortBy from "lodash/sortBy";
 
 const ITERATIONS = 1000000;
 
-let LOGGING_ENABLED = false;
+const LOGGING_ENABLED = false;
 const log = (msg: string) => LOGGING_ENABLED && console.log(msg);
-const time = (name: string) => LOGGING_ENABLED && console.time(name);
-const timeEnd = (name: string) => LOGGING_ENABLED && console.timeEnd(name);
 
 const MemoryInMbToArraySize = (memoryInMb: number) => {
   const memoryInBits =
@@ -21,62 +25,93 @@ const MemoryInMbToArraySize = (memoryInMb: number) => {
   return slightlyLessThanArraySize;
 };
 
-const printArraySizeMB = (array_size: number) => {
-  const sizeInMb = (array_size * 64) / (8 * 1000 * 1000);
-  log("--------------------------------------------------");
-  log(`Array of ${array_size} numbers uses ${sizeInMb}MB of memory`);
-};
-
-const sequentialAccess = (arraySizeInMb: number) => {
-  const arraySize = MemoryInMbToArraySize(arraySizeInMb);
+const measureForArraySizeMB = (arraySizeMB: number) => {
+  const arraySize = MemoryInMbToArraySize(arraySizeMB);
   const arr = new Array(arraySize).fill(null).map(() => Math.random());
-  const sequentialAccessIndexes = new Array(arraySize)
-    .fill(null)
-    .map((_, i) => i);
 
-  time("Sequential Access");
-  let result = 0;
-  for (let i = 0; i < ITERATIONS; i++) {
-    const index = i % arraySize;
-    result = result ^ arr[sequentialAccessIndexes[index]];
-  }
-  timeEnd("Sequential Access");
-};
-
-const randomAccess = (arraySizeInMb: number) => {
-  const arraySize = MemoryInMbToArraySize(arraySizeInMb);
-  const arr = new Array(arraySize).fill(null).map(() => Math.random());
   const randomAccessIndexes = new Array(arraySize)
     .fill(null)
     .map((_) => Math.floor(Math.random() * arraySize));
 
-  time("Random Access");
+  const seqAccessIndexes = new Array(arraySize).fill(null).map((_, i) => i);
+
+  const seqTimes = [];
+  const randTimes = [];
+
   let result = 0;
-  for (let i = 0; i < ITERATIONS; i++) {
-    const index = i % arraySize;
-    result = result ^ arr[randomAccessIndexes[index]];
+
+  for (let i = 0; i < 5; i++) {
+    const seqTime = measureTime(() => {
+      for (let i = 0; i < ITERATIONS; i++) {
+        const index = i % arraySize;
+        result = result ^ arr[seqAccessIndexes[index]];
+      }
+    });
+    seqTimes.push(seqTime);
+
+    const randTime = measureTime(() => {
+      for (let i = 0; i < ITERATIONS; i++) {
+        const index = i % arraySize;
+        result = result ^ arr[randomAccessIndexes[index]];
+      }
+    });
+    randTimes.push(randTime);
   }
-  timeEnd("Random Access");
+
+  const seqMean = mean(seqTimes);
+  const randMean = mean(randTimes);
+
+  console.log("Array size: ", arraySizeMB);
+  console.log("SEQ mean: ", seqMean);
+  console.log("RAN mean: ", randMean);
+  console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+  return { seqMean, randMean };
 };
 
-const runWithMemory = (memoryInMb: number) => {
-  // let it warm up
-  LOGGING_ENABLED = false;
-  sequentialAccess(memoryInMb);
-  randomAccess(memoryInMb);
-
-  LOGGING_ENABLED = true;
-  log("\n\n");
-  sequentialAccess(memoryInMb);
-  randomAccess(memoryInMb);
+type Point = {
+  sizeMB: number;
+  seqMean: number;
+  randMean: number;
 };
 
-runWithMemory(1);
-// runWithMemory(2);
-// runWithMemory(3);
-runWithMemory(15);
-runWithMemory(16);
-runWithMemory(17);
-runWithMemory(18);
-runWithMemory(19);
-runWithMemory(20);
+const results: Array<Point> = [];
+for (const i of range(1, 30 * 20)) {
+  const sizeMB = i / 20;
+  const { seqMean, randMean } = measureForArraySizeMB(sizeMB);
+  results.push({ sizeMB, seqMean, randMean });
+}
+
+const path = "./results.json";
+let existingData = [];
+try {
+  const existingDataJSON = fs.readFileSync(path, "utf-8");
+  existingData = JSON.parse(existingDataJSON);
+  console.log("Merging data with existing file");
+} catch (_e) {
+  console.log("No existing file found");
+}
+
+const byMem: { [key: number]: Array<Point> } = {};
+
+for (const point of existingData) {
+  byMem[point.sizeMB] = [point];
+}
+
+for (const point of results) {
+  if (!byMem[point.sizeMB]) {
+    byMem[point.sizeMB] = [];
+  }
+  byMem[point.sizeMB].push(point);
+}
+
+const mergedResults = Object.values(byMem).map((points) => {
+  const seqMean = mean(points.map((p) => p.seqMean));
+  const randMean = mean(points.map((p) => p.randMean));
+  return { sizeMB: points[0].sizeMB, seqMean, randMean };
+});
+
+const sortedMergedResults = sortBy(mergedResults, (p) => p.sizeMB);
+
+fs.writeFileSync(path, JSON.stringify(sortedMergedResults, null, 4));
+console.log("Results saved to: ", path);

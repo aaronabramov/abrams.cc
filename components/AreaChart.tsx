@@ -1,9 +1,8 @@
 import React, { useMemo, useCallback } from "react";
 import { AreaClosed, Line, Bar } from "@visx/shape";
-import appleStock, { AppleStock } from "@visx/mock-data/lib/mocks/appleStock";
 import { curveMonotoneX } from "@visx/curve";
 import { GridRows, GridColumns } from "@visx/grid";
-import { scaleTime, scaleLinear } from "@visx/scale";
+import { scaleLinear } from "@visx/scale";
 import {
   withTooltip,
   Tooltip,
@@ -14,13 +13,21 @@ import { WithTooltipProvidedProps } from "@visx/tooltip/lib/enhancers/withToolti
 import { localPoint } from "@visx/event";
 import { LinearGradient } from "@visx/gradient";
 import { max, extent, bisector } from "@visx/vendor/d3-array";
-import { timeFormat } from "@visx/vendor/d3-time-format";
 import { ParentSize } from "@visx/responsive";
 
 import { GradientDarkgreenGreen } from "@visx/gradient";
-type TooltipData = AppleStock;
 
-const stock = appleStock.slice(800);
+import dataJSON from "../faster-javascript/2_cpu_cache_layers/results.json";
+
+type Point = {
+  sizeMB: number;
+  seqMean: number;
+  randMean: number;
+};
+
+const data: Array<Point> = dataJSON;
+type TooltipData = Point;
+
 export const background = "#3b6978";
 export const background2 = "#204051";
 export const accentColor = "#edffea";
@@ -32,13 +39,11 @@ const tooltipStyles = {
   color: "white",
 };
 
-// util
-const formatDate = timeFormat("%b %d, '%y");
+const getMem = (point: Point) => point.sizeMB;
+const getSeqRuntime = (point: Point) => point.seqMean;
+const getRanRuntime = (point: Point) => point.randMean;
 
-// accessors
-const getDate = (d: AppleStock) => new Date(d.date);
-const getStockValue = (d: AppleStock) => d.close;
-const bisectDate = bisector<AppleStock, Date>((d) => new Date(d.date)).left;
+const bisectMem = bisector<Point, number>((p) => p.sizeMB).left;
 
 export type AreaProps = {
   width: number;
@@ -72,23 +77,25 @@ const Chart = withTooltip<AreaProps, TooltipData>(
     const innerHeight = height - margin.top - margin.bottom;
 
     // scales
-    const dateScale = useMemo(
+    const memScale = useMemo(
       () =>
-        scaleTime({
+        scaleLinear({
           range: [margin.left, innerWidth + margin.left],
-          domain: extent(stock, getDate) as [Date, Date],
+          domain: extent(data, getMem) as [number, number],
         }),
       [innerWidth, margin.left]
     );
-    const stockValueScale = useMemo(
-      () =>
-        scaleLinear({
-          range: [innerHeight + margin.top, margin.top],
-          domain: [0, (max(stock, getStockValue) || 0) + innerHeight / 3],
-          nice: true,
-        }),
-      [margin.top, innerHeight]
-    );
+
+    const runtimeScale = useMemo(() => {
+      const maxRuntime = max(data, getRanRuntime) || 0;
+      const domain = [0, maxRuntime];
+      console.log({ maxRuntime, domain });
+      return scaleLinear({
+        range: [innerHeight + margin.top, margin.top],
+        domain,
+        nice: true,
+      });
+    }, [margin.top, innerHeight]);
 
     // tooltip handler
     const handleTooltip = useCallback(
@@ -98,25 +105,25 @@ const Chart = withTooltip<AreaProps, TooltipData>(
           | React.MouseEvent<SVGRectElement>
       ) => {
         const { x } = localPoint(event) || { x: 0 };
-        const x0 = dateScale.invert(x);
-        const index = bisectDate(stock, x0, 1);
-        const d0 = stock[index - 1];
-        const d1 = stock[index];
+        const x0 = memScale.invert(x);
+        const index = bisectMem(data, x0, 1);
+        const d0 = data[index - 1];
+        const d1 = data[index];
         let d = d0;
-        if (d1 && getDate(d1)) {
+        if (d1 && getMem(d1)) {
           d =
-            x0.valueOf() - getDate(d0).valueOf() >
-            getDate(d1).valueOf() - x0.valueOf()
+            x0.valueOf() - getMem(d0).valueOf() >
+            getMem(d1).valueOf() - x0.valueOf()
               ? d1
               : d0;
         }
         showTooltip({
           tooltipData: d,
           tooltipLeft: x,
-          tooltipTop: stockValueScale(getStockValue(d)),
+          tooltipTop: runtimeScale(getRanRuntime(d)),
         });
       },
-      [showTooltip, stockValueScale, dateScale]
+      [showTooltip, runtimeScale, memScale]
     );
 
     return (
@@ -144,7 +151,7 @@ const Chart = withTooltip<AreaProps, TooltipData>(
           <GradientDarkgreenGreen id="fancy-gradient" />
           <GridRows
             left={margin.left}
-            scale={stockValueScale}
+            scale={runtimeScale}
             width={innerWidth}
             strokeDasharray="1,3"
             stroke={accentColor}
@@ -153,28 +160,28 @@ const Chart = withTooltip<AreaProps, TooltipData>(
           />
           <GridColumns
             top={margin.top}
-            scale={dateScale}
+            scale={memScale}
             height={innerHeight}
             strokeDasharray="1,3"
             stroke={accentColor}
             strokeOpacity={0.2}
             pointerEvents="none"
           />
-          <AreaClosed<AppleStock>
-            data={stock}
-            x={(d) => dateScale(getDate(d)) ?? 0}
-            y={(d) => (stockValueScale(getStockValue(d)) ?? 0) + 100}
-            yScale={stockValueScale}
+          <AreaClosed<Point>
+            data={data}
+            x={(d) => memScale(getMem(d)) ?? 0}
+            y={(d) => runtimeScale(getRanRuntime(d)) ?? 0}
+            yScale={runtimeScale}
             strokeWidth={1}
             stroke="url(#area-gradient)"
             fill="url(#area-gradient)"
             curve={curveMonotoneX}
           />
-          <AreaClosed<AppleStock>
-            data={stock}
-            x={(d) => dateScale(getDate(d)) ?? 0}
-            y={(d) => stockValueScale(getStockValue(d)) ?? 0}
-            yScale={stockValueScale}
+          <AreaClosed<Point>
+            data={data}
+            x={(d) => memScale(getMem(d)) ?? 0}
+            y={(d) => runtimeScale(getSeqRuntime(d)) ?? 0}
+            yScale={runtimeScale}
             strokeWidth={1}
             stroke="url(#area-gradient)"
             fill="url(#area-gradient)"
@@ -241,7 +248,7 @@ const Chart = withTooltip<AreaProps, TooltipData>(
               left={tooltipLeft + 12}
               style={tooltipStyles}
             >
-              {`$${getStockValue(tooltipData)}`}
+              {`$${getRanRuntime(tooltipData)}`}
             </TooltipWithBounds>
             <Tooltip
               top={innerHeight + margin.top - 14}
@@ -253,7 +260,7 @@ const Chart = withTooltip<AreaProps, TooltipData>(
                 transform: "translateX(-50%)",
               }}
             >
-              {formatDate(getDate(tooltipData))}
+              {`${getMem(tooltipData)}MB`}
             </Tooltip>
           </div>
         )}

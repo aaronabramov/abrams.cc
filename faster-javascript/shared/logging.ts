@@ -1,10 +1,13 @@
-export const measureTime = (fn: Function): number => {
+export const measureTime = (fn: () => void): number => {
   const start = performance.now(); // Start the timer
   fn(); // Execute the passed function
-  const end = performance.now(); // End the timer
+  const end = performance.now();
+  const executionTime = end - start;
+  return Math.floor(executionTime);
+};
 
-  const executionTime = end - start; // Calculate execution time
-  console.log(`Execution Time: ${executionTime} milliseconds`); // Log execution time
-
-  return executionTime; // Return the execution time
+export const measureAndPrintTime = (name: string, fn: () => void): number => {
+  const executionTime = measureTime(fn);
+  console.log(`Execution Time: ${executionTime} milliseconds. [${name}]`);
+  return executionTime;
 };
