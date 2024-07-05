@@ -167,24 +167,31 @@ export class OffsetGraphDFSU32 extends ComputeTransitiveSizes {
 		const graph = this.OffsetGraph;
 		const { offsets, edges, sizes_bytes } = graph;
 
+		let totalSize = 0;
+		const stack = [];
+		let next = 0;
+		let start = 0;
+		let end = 0;
+		let childIDX = 0;
 		for (let i = 0; i < nodeCount; i++) {
+			totalSize = 0;
 			visited.fill(0);
-			const stack = [i];
-			let totalSize = 0;
+			stack.length = 1;
+			stack[0] = i;
 
-			while (stack.length > 0) {
-				const next = stack.pop() as number;
+			while (stack.length !== 0) {
+				next = stack.pop() as number;
 				if (visited[next] === 1) {
 					continue;
 				}
 				visited[next] = 1;
 				totalSize += sizes_bytes[next];
 
-				const start = offsets[next];
-				const end = offsets[next + 1];
+				start = offsets[next];
+				end = offsets[next + 1];
 
 				for (let j = start; j < end; j++) {
-					const childIDX = edges[j];
+					childIDX = edges[j];
 					if (visited[childIDX] === 0) {
 						stack.push(childIDX);
 					}

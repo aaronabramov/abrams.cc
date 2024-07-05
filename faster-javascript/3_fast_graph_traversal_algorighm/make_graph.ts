@@ -22,12 +22,12 @@ const RANDOM_ANIMALS = [
 
 const makeNodeName = (i: number): string => {
 	const segments = [
-		RANDOM_ANIMALS[i % RANDOM_ANIMALS.length],
-		RANDOM_ANIMALS[i % RANDOM_ANIMALS.length],
-		RANDOM_ANIMALS[i % RANDOM_ANIMALS.length],
-		RANDOM_ANIMALS[i % RANDOM_ANIMALS.length],
-		RANDOM_ANIMALS[i % RANDOM_ANIMALS.length],
-		RANDOM_ANIMALS[i % RANDOM_ANIMALS.length],
+		RANDOM_ANIMALS[i % Math.floor(Math.random() * RANDOM_ANIMALS.length)],
+		RANDOM_ANIMALS[i % Math.floor(Math.random() * RANDOM_ANIMALS.length)],
+		RANDOM_ANIMALS[i % Math.floor(Math.random() * RANDOM_ANIMALS.length)],
+		RANDOM_ANIMALS[i % Math.floor(Math.random() * RANDOM_ANIMALS.length)],
+		RANDOM_ANIMALS[i % Math.floor(Math.random() * RANDOM_ANIMALS.length)],
+		RANDOM_ANIMALS[i % Math.floor(Math.random() * RANDOM_ANIMALS.length)],
 	];
 
 	return segments.join("/") + `/node-${i}.js`;
