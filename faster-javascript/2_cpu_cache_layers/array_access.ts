@@ -5,33 +5,36 @@ import range from "lodash/range";
 import mean from "lodash/mean";
 import fs from "fs";
 import sortBy from "lodash/sortBy";
+import shuffle from "lodash/shuffle";
 
 const ITERATIONS = 1000000;
 
 const LOGGING_ENABLED = false;
 const log = (msg: string) => LOGGING_ENABLED && console.log(msg);
 
-const MemoryInMbToArraySize = (memoryInMb: number) => {
-  const memoryInBits =
-    memoryInMb * 1000 /* to kb */ * 1000 /* to bytes */ * 8; /* to bits */
-  const arraySize = memoryInBits / 64; /* 64 bits per `number` */
+// const MemoryInMbToArraySize = (memoryInMb: number) => {
+//   const memoryInBits =
+//     memoryInMb * 1000 /* to kb */ * 1000 /* to bytes */ * 8; /* to bits */
+//   const arraySize = memoryInBits / 64; /* 64 bits per `number` */
 
-  // let's make it 5% smaller to make sure we can fit it even if there's some overhead
-  const slightlyLessThanArraySize = Math.floor(arraySize - arraySize * 0.05);
-  log("------------------------------------------");
-  log(
-    `Memory of ${memoryInMb}MB can hold array of ${slightlyLessThanArraySize} numbers`
-  );
-  return slightlyLessThanArraySize;
-};
+//   // let's make it 5% smaller to make sure we can fit it even if there's some overhead
+//   const slightlyLessThanArraySize = Math.floor(arraySize - arraySize * 0.05);
+//   log("------------------------------------------");
+//   log(
+//     `Memory of ${memoryInMb}MB can hold array of ${slightlyLessThanArraySize} numbers`
+//   );
+//   return slightlyLessThanArraySize;
+// };
 
 const measureForArraySizeMB = (arraySizeMB: number) => {
-  const arraySize = MemoryInMbToArraySize(arraySizeMB);
-  const arr = new Array(arraySize).fill(null).map(() => Math.random());
+  const arraySize = memoryInMbToArraySize(arraySizeMB);
+  const arr = new Uint32Array(arraySize)
+    .fill(0)
+    .map(() => Math.floor(Math.random() * 0xffffffff));
 
   const randomAccessIndexes = new Array(arraySize)
     .fill(null)
-    .map((_) => Math.floor(Math.random() * arraySize));
+    .map(() => Math.floor(Math.random() * arraySize));
 
   const seqAccessIndexes = new Array(arraySize).fill(null).map((_, i) => i);
 
@@ -40,7 +43,7 @@ const measureForArraySizeMB = (arraySizeMB: number) => {
 
   let result = 0;
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     const seqTime = measureTime(() => {
       for (let i = 0; i < ITERATIONS; i++) {
         const index = i % arraySize;
@@ -69,6 +72,11 @@ const measureForArraySizeMB = (arraySizeMB: number) => {
   return { seqMean, randMean };
 };
 
+// Helper function to map the array size from MB to the number of elements
+const memoryInMbToArraySize = (mb: number) => {
+  return Math.floor((mb * 1024 * 1024) / 4); // Dividing by 4 because each Uint32 element is 4 bytes
+};
+
 type Point = {
   sizeMB: number;
   seqMean: number;
@@ -76,8 +84,8 @@ type Point = {
 };
 
 const results: Array<Point> = [];
-for (const i of range(1, 30 * 20)) {
-  const sizeMB = i / 20;
+for (const i of shuffle(range(1, 50))) {
+  const sizeMB = i;
   const { seqMean, randMean } = measureForArraySizeMB(sizeMB);
   results.push({ sizeMB, seqMean, randMean });
 }

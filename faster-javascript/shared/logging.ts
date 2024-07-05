@@ -3,7 +3,7 @@ export const measureTime = (fn: () => void): number => {
   fn(); // Execute the passed function
   const end = performance.now();
   const executionTime = end - start;
-  return Math.floor(executionTime);
+  return executionTime;
 };
 
 export const measureAndPrintTime = (name: string, fn: () => void): number => {
